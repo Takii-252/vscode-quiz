@@ -4,10 +4,12 @@
 
 ## 1. 接続先と前提
 
-- API Base URL（ローカル）: `http://localhost:8000`
+- API Base URL（ローカル）: `http://127.0.0.1:8000`
 - CORS: 全許可（開発向け）
 - レスポンスは `application/json`
 - OS指定は必ず `mac` または `windows`
+- フロントはデフォルトで相対パス（`/api`）を利用し、Vite proxy 経由で `127.0.0.1:8000` に接続
+- バックエンドを別ホストに置く場合は `frontend/.env` に `VITE_API_BASE_URL=http://<backend-host>:8000` を設定
 
 ## 2. 先に使うAPI（最短フロー）
 
@@ -179,4 +181,3 @@ export async function fetchWeakness(limit = 10) {
 ---
 
 詳細API契約は [API_SPEC.md](/Users/yuru/Desktop/もくもく会記録用/vscode-quiz/backend/API_SPEC.md) を参照。
-
