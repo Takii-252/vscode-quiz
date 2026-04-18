@@ -1,0 +1,223 @@
+[
+  {
+    "id": 101,
+    "prompt": "検索（ファイル内）のショートカットは？",
+    "category": "search",
+    "difficulty": 1,
+    "explanation": "検索のショートカットは Command(Ctrl)+F です。",
+    "tags": ["search", "basic"],
+    "answers": { "mac": ["Meta+F"], "windows": ["Control+F"] },
+    "hint1": "修飾キー + F",
+    "hint2": "ファイル内検索の定番"
+  },
+  {
+    "id": 102,
+    "prompt": "保存のショートカットは？",
+    "category": "file",
+    "difficulty": 1,
+    "explanation": "保存は Command(Ctrl)+S です。",
+    "tags": ["file", "basic"],
+    "answers": { "mac": ["Meta+S"], "windows": ["Control+S"] },
+    "hint1": "修飾キー + S",
+    "hint2": "Save の S"
+  },
+  {
+    "id": 103,
+    "prompt": "新規ファイル作成のショートカットは？",
+    "category": "file",
+    "difficulty": 1,
+    "explanation": "新規作成は Command(Ctrl)+N です。",
+    "tags": ["file", "basic"],
+    "answers": { "mac": ["Meta+N"], "windows": ["Control+N"] },
+    "hint1": "修飾キー + N",
+    "hint2": "New の N"
+  },
+  {
+    "id": 104,
+    "prompt": "ファイルを開くショートカットは？",
+    "category": "file",
+    "difficulty": 1,
+    "explanation": "開くは Command(Ctrl)+O です。",
+    "tags": ["file", "basic"],
+    "answers": { "mac": ["Meta+O"], "windows": ["Control+O"] },
+    "hint1": "修飾キー + O",
+    "hint2": "Open の O"
+  },
+  {
+    "id": 105,
+    "prompt": "置換（ファイル内）のショートカットは？",
+    "category": "search",
+    "difficulty": 1,
+    "explanation": "置換は Command(Ctrl)+Option(Alt)+F です。",
+    "tags": ["search", "replace"],
+    "answers": { "mac": ["Meta+Alt+F"], "windows": ["Control+Alt+F"] },
+    "hint1": "検索にもう1つ修飾キーを足す",
+    "hint2": "検索(Command/Ctrl+F)に Alt(Option) を追加"
+  },
+  {
+    "id": 106,
+    "prompt": "クイックオープンのショートカットは？",
+    "category": "navigation",
+    "difficulty": 1,
+    "explanation": "クイックオープンは Command(Ctrl)+P です。",
+    "tags": ["navigation", "basic"],
+    "answers": { "mac": ["Meta+P"], "windows": ["Control+P"] },
+    "hint1": "修飾キー + P",
+    "hint2": "ファイル名ジャンプ"
+  },
+  {
+    "id": 107,
+    "prompt": "コマンドパレットを開くショートカットは？",
+    "category": "navigation",
+    "difficulty": 2,
+    "explanation": "コマンドパレットは Command(Ctrl)+Shift+P です。",
+    "tags": ["navigation", "command-palette"],
+    "answers": { "mac": ["Meta+Shift+P"], "windows": ["Control+Shift+P"] },
+    "hint1": "クイックオープンに Shift を追加",
+    "hint2": "P を使う 3 キー"
+  },
+  {
+    "id": 108,
+    "prompt": "統合ターミナルを表示/非表示するショートカットは？",
+    "category": "terminal",
+    "difficulty": 2,
+    "explanation": "統合ターミナル切替はバッククォートのキーです。",
+    "tags": ["terminal"],
+    "answers": { "mac": ["Control+`"], "windows": ["Control+`"] },
+    "hint1": "Ctrl + `",
+    "hint2": "数字1の左にある記号キー"
+  },
+  {
+    "id": 109,
+    "prompt": "行をコピー（下に複製）するショートカットは？",
+    "category": "edit",
+    "difficulty": 2,
+    "explanation": "行複製は Shift+Option(Alt)+Down です。",
+    "tags": ["edit", "line"],
+    "answers": { "mac": ["Shift+Alt+Down"], "windows": ["Shift+Alt+Down"] },
+    "hint1": "Shift + Alt + 矢印",
+    "hint2": "下方向キーを使う"
+  },
+  {
+    "id": 110,
+    "prompt": "行を上へ移動するショートカットは？",
+    "category": "edit",
+    "difficulty": 2,
+    "explanation": "行移動は Option(Alt)+Up です。",
+    "tags": ["edit", "line"],
+    "answers": { "mac": ["Alt+Up"], "windows": ["Alt+Up"] },
+    "hint1": "Alt + 矢印",
+    "hint2": "上方向キーを使う"
+  },
+  {
+    "id": 111,
+    "prompt": "コメントアウト切替のショートカットは？",
+    "category": "edit",
+    "difficulty": 1,
+    "explanation": "コメント切替は Command(Ctrl)+/ です。",
+    "tags": ["edit", "comment"],
+    "answers": { "mac": ["Meta+/"], "windows": ["Control+/"] },
+    "hint1": "修飾キー + /",
+    "hint2": "slash キーを使う"
+  },
+  {
+    "id": 112,
+    "prompt": "全選択のショートカットは？",
+    "category": "edit",
+    "difficulty": 1,
+    "explanation": "全選択は Command(Ctrl)+A です。",
+    "tags": ["edit", "basic"],
+    "answers": { "mac": ["Meta+A"], "windows": ["Control+A"] },
+    "hint1": "修飾キー + A",
+    "hint2": "All の A"
+  },
+  {
+    "id": 113,
+    "prompt": "元に戻す（Undo）のショートカットは？",
+    "category": "edit",
+    "difficulty": 1,
+    "explanation": "Undo は Command(Ctrl)+Z です。",
+    "tags": ["edit", "basic"],
+    "answers": { "mac": ["Meta+Z"], "windows": ["Control+Z"] },
+    "hint1": "修飾キー + Z",
+    "hint2": "Undo の定番"
+  },
+  {
+    "id": 114,
+    "prompt": "やり直し（Redo）のショートカットは？",
+    "category": "edit",
+    "difficulty": 2,
+    "explanation": "Redo は Shift を追加します。",
+    "tags": ["edit"],
+    "answers": { "mac": ["Meta+Shift+Z"], "windows": ["Control+Y", "Control+Shift+Z"] },
+    "hint1": "Undo に Shift を足す（Windowsは別解あり）",
+    "hint2": "mac: Cmd+Shift+Z / windows: Ctrl+Y も可"
+  },
+  {
+    "id": 115,
+    "prompt": "サイドバーの表示/非表示のショートカットは？",
+    "category": "navigation",
+    "difficulty": 1,
+    "explanation": "サイドバー切替は Command(Ctrl)+B です。",
+    "tags": ["navigation", "ui"],
+    "answers": { "mac": ["Meta+B"], "windows": ["Control+B"] },
+    "hint1": "修飾キー + B",
+    "hint2": "Bar の B と覚える"
+  },
+  {
+    "id": 116,
+    "prompt": "エディタを分割するショートカットは？",
+    "category": "navigation",
+    "difficulty": 2,
+    "explanation": "分割は Option(Alt)+Command(Ctrl)+\\ です。",
+    "tags": ["navigation", "editor"],
+    "answers": { "mac": ["Meta+Alt+\\"], "windows": ["Control+\\"] },
+    "hint1": "区切り文字 \\ を使う",
+    "hint2": "macは Cmd+Option+\\、windowsは Ctrl+\\"
+  },
+  {
+    "id": 117,
+    "prompt": "次のタブに移動するショートカットは？",
+    "category": "navigation",
+    "difficulty": 2,
+    "explanation": "次タブ移動は Ctrl+Tab です。",
+    "tags": ["navigation", "tab"],
+    "answers": { "mac": ["Control+Tab"], "windows": ["Control+Tab"] },
+    "hint1": "Ctrl + Tab",
+    "hint2": "ブラウザのタブ移動と同じ"
+  },
+  {
+    "id": 118,
+    "prompt": "デバッグ開始/続行のショートカットは？",
+    "category": "debug",
+    "difficulty": 1,
+    "explanation": "デバッグ開始/続行は F5 です。",
+    "tags": ["debug"],
+    "answers": { "mac": ["F5"], "windows": ["F5"] },
+    "hint1": "ファンクションキー",
+    "hint2": "F5"
+  },
+  {
+    "id": 119,
+    "prompt": "ブレークポイント切替のショートカットは？",
+    "category": "debug",
+    "difficulty": 2,
+    "explanation": "ブレークポイントは F9 です。",
+    "tags": ["debug"],
+    "answers": { "mac": ["F9"], "windows": ["F9"] },
+    "hint1": "Fキーの後半",
+    "hint2": "F9"
+  },
+  {
+    "id": 120,
+    "prompt": "シンボルへ移動（ファイル内）のショートカットは？",
+    "category": "navigation",
+    "difficulty": 3,
+    "explanation": "シンボル移動は Command(Ctrl)+Shift+O です。",
+    "tags": ["navigation", "symbol"],
+    "answers": { "mac": ["Meta+Shift+O"], "windows": ["Control+Shift+O"] },
+    "hint1": "修飾キー2つ + O",
+    "hint2": "Outline へ飛ぶイメージ"
+  }
+]
+
