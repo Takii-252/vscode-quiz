@@ -17,7 +17,9 @@ export default function BattlePage() {
   const playerMaxHp = useBattleStore(s => s.playerMaxHp)
   const enemyHp = useBattleStore(s => s.enemyHp)
   const currentMonster = useBattleStore(s => s.currentMonster)
-  const currentQuestion = useBattleStore(s => s.currentQuestion)
+  const currentQuestionId = useBattleStore(s => s.currentQuestionId)
+  const currentPrompt = useBattleStore(s => s.currentPrompt)
+  const isLoading = useBattleStore(s => s.isLoading)
   const logs = useBattleStore(s => s.logs)
   const attempts = useBattleStore(s => s.attempts)
   const hintShown = useBattleStore(s => s.hintShown)
@@ -47,7 +49,7 @@ export default function BattlePage() {
       {/* トップバー */}
       <div className="flex justify-between items-center px-1">
         <h1 className="text-base font-bold text-blue-300 tracking-wide">
-          VS Code Quest<span className="text-xs text-slate-500 ml-1">(モック)</span>
+          VS Code Quest
         </h1>
         <div className="flex items-center gap-3">
           {/* OS切替 */}
@@ -103,11 +105,13 @@ export default function BattlePage() {
 
           {/* 問題エリア */}
           <QuestionCard
-            question={currentQuestion}
+            questionId={currentQuestionId}
+            prompt={currentPrompt}
             os={osType}
             mode={mode}
             attempts={attempts}
             hintShown={hintShown}
+            isLoading={isLoading}
             onSubmit={submitAnswer}
             onHint={showHint}
             onEnemyTurn={enemyTurn}

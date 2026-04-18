@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBattleStore } from '../features/battle/stores/battleStore'
+import { saveResult } from '../lib/api'
 
 export default function ResultPage() {
   const navigate = useNavigate()
@@ -8,12 +10,24 @@ export default function ResultPage() {
   const correctCount = useBattleStore(s => s.correctCount)
   const wrongCount = useBattleStore(s => s.wrongCount)
   const hintCount = useBattleStore(s => s.hintCount)
+  const askedIds = useBattleStore(s => s.askedIds)
   const initialize = useBattleStore(s => s.initialize)
 
   const total = correctCount + wrongCount
   const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0
-
   const isWin = mode === 'win'
+
+  // リザルトをAPIに保存
+  useEffect(() => {
+    saveResult({
+      clearedCount: askedIds.length,
+      correctCount,
+      wrongCount,
+      hintCount,
+      score,
+      playedAt: new Date().toISOString(),
+    }).catch(() => { /* 保存失敗は無視 */ })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleRetry() {
     initialize()

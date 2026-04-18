@@ -1,15 +1,16 @@
 import { useState } from 'react'
-import type { Question, OsType } from '../../types/shortcut'
+import type { OsType } from '../../types/shortcut'
 import type { BattleMode } from '../../types/battle'
 import ShortcutInput from './ShortcutInput'
-import { normalizeShortcutString, displayShortcut } from '../../utils/normalizeShortcut'
 
 interface QuestionCardProps {
-  question: Question | null
+  questionId: number | null
+  prompt: string
   os: OsType
   mode: BattleMode
   attempts: number
   hintShown: boolean
+  isLoading?: boolean
   onSubmit: (keys: string[]) => void
   onHint: () => void
   onEnemyTurn: () => void
@@ -17,22 +18,20 @@ interface QuestionCardProps {
 }
 
 export default function QuestionCard({
-  question,
+  questionId,
+  prompt,
   os,
   mode,
   attempts,
   hintShown,
+  isLoading = false,
   onSubmit,
   onHint,
   onEnemyTurn,
   onReset,
 }: QuestionCardProps) {
   const [pendingKeys, setPendingKeys] = useState<string[]>([])
-  const isDisabled = mode !== 'asking'
-
-  const correctAnswer = question
-    ? displayShortcut(normalizeShortcutString(question.answers[os][0]), os)
-    : ''
+  const isDisabled = mode !== 'asking' || isLoading
 
   function handleSubmit() {
     if (pendingKeys.length === 0 || isDisabled) return
@@ -46,7 +45,7 @@ export default function QuestionCard({
       <div>
         <p className="text-xs text-slate-500 mb-1">もんだい</p>
         <p className="text-base font-semibold text-slate-100">
-          {question ? `「${question.prompt}」` : '問題をロード中...'}
+          {isLoading ? '問題をロード中...' : questionId ? `「${prompt}」` : '問題をロード中...'}
         </p>
       </div>
 
@@ -85,8 +84,7 @@ export default function QuestionCard({
       <div className="debug-bar">
         attempts: {attempts} &nbsp;|&nbsp;
         hintShown: {hintShown.toString()} &nbsp;|&nbsp;
-        state: {mode} &nbsp;|&nbsp;
-        正解: {correctAnswer}
+        state: {mode}
       </div>
     </div>
   )

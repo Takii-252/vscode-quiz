@@ -1,285 +1,271 @@
-import { create } from 'zustand'
-import type { Question, OsType } from '../../../types/shortcut'
+﻿import { create } from 'zustand'
+import type { OsType } from '../../../types/shortcut'
 import type { BattleMode, Monster } from '../../../types/battle'
-import { questions as allQuestions, monsters } from '../../../data/questions'
-import { judgeShortcut } from '../../../utils/judgeShortcut'
-import { normalizeShortcutFromKeys, displayShortcut } from '../../../utils/normalizeShortcut'
+import {
+  fetchNextQuestion,
+  judgeAnswer,
+  fetchHint,
+  type NextQuestionResponse,
+} from '../../../lib/api'
+import { normalizeShortcutFromKeys } from '../../../utils/normalizeShortcut'
 
 const PLAYER_MAX_HP = 5
-const CORRECT_DAMAGE = 4
-const HINT_DAMAGE = 2
 const ENEMY_DAMAGE = 2
 const MAX_ATTEMPTS = 3
 
-function shuffleArray<T>(arr: T[]): T[] {
-  const copy = [...arr]
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+const DEFAULT_MONSTER: Monster = {
+  id: 'slime',
+  name: 'ショートカットスライム',
+  maxHp: 12,
+  emoji: '',
+}
+
+function monsterFromApi(m: NextQuestionResponse['monster']): Monster {
+  return {
+    id: m.name,
+    name: m.name,
+    maxHp: m.hp,
+    emoji: '',
   }
-  return copy
 }
 
 interface BattleStore {
-  // 状態
   mode: BattleMode
   osType: OsType
   playerHp: number
   playerMaxHp: number
   enemyHp: number
   enemyMaxHp: number
-  currentQuestion: Question | null
+  currentQuestionId: number | null
+  currentPrompt: string
   logs: string[]
   attempts: number
   hintShown: boolean
   hintStep: number
   score: number
   currentMonster: Monster
-  questionQueue: Question[]
-  questionIndex: number
-  // 集計
+  askedIds: number[]
   correctCount: number
   wrongCount: number
   hintCount: number
+  isLoading: boolean
+  useApi: boolean
 
-  // アクション
-  initialize: (os?: OsType) => void
+  initialize: (os?: OsType) => Promise<void>
   setOsType: (os: OsType) => void
-  submitAnswer: (keys: string[]) => void
-  showHint: () => void
-  enemyTurn: () => void
-  reset: () => void
+  submitAnswer: (keys: string[]) => Promise<void>
+  showHint: () => Promise<void>
+  enemyTurn: () => Promise<void>
+  reset: () => Promise<void>
 }
 
-function buildInitialState(os: OsType = 'mac') {
-  const queue = shuffleArray(allQuestions)
-  const monster = { ...monsters[0] }
+function baseState(os: OsType = 'mac') {
   return {
-    mode: 'asking' as BattleMode,
+    mode: 'idle' as BattleMode,
     osType: os,
     playerHp: PLAYER_MAX_HP,
     playerMaxHp: PLAYER_MAX_HP,
-    enemyHp: monster.maxHp,
-    enemyMaxHp: monster.maxHp,
-    currentQuestion: queue[0] ?? null,
-    logs: ['VS Code ショートカットクイズ バトル開始！', 'モンスターがあらわれた！'],
+    enemyHp: DEFAULT_MONSTER.maxHp,
+    enemyMaxHp: DEFAULT_MONSTER.maxHp,
+    currentQuestionId: null,
+    currentPrompt: '',
+    logs: [],
     attempts: 0,
     hintShown: false,
     hintStep: 0,
     score: 0,
-    currentMonster: monster,
-    questionQueue: queue,
-    questionIndex: 0,
+    currentMonster: DEFAULT_MONSTER,
+    askedIds: [],
     correctCount: 0,
     wrongCount: 0,
     hintCount: 0,
+    isLoading: false,
+    useApi: true,
   }
 }
 
 export const useBattleStore = create<BattleStore>((set, get) => ({
-  ...buildInitialState(),
+  ...baseState(),
 
-  initialize(os) {
-    const initial = buildInitialState(os ?? get().osType)
-    set(initial)
+  async initialize(os) {
+    const osType = os ?? get().osType
+    set({ ...baseState(osType), isLoading: true })
+    try {
+      const q = await fetchNextQuestion({ os: osType, excludeIds: [] })
+      set({
+        mode: 'asking',
+        currentQuestionId: q.questionId,
+        currentPrompt: q.prompt,
+        currentMonster: monsterFromApi(q.monster),
+        enemyHp: q.monster.hp,
+        enemyMaxHp: q.monster.hp,
+        logs: ['VS Code ショートカットクイズ バトル開始！', 'モンスターがあらわれた！'],
+        askedIds: [q.questionId],
+        isLoading: false,
+      })
+    } catch {
+      set({ mode: 'asking', isLoading: false, logs: ['APIに接続できません。オフラインモードです。'] })
+    }
   },
 
   setOsType(os) {
     set({ osType: os })
   },
 
-  submitAnswer(keys) {
+  async submitAnswer(keys) {
     const state = get()
-    if (state.mode !== 'asking') return
+    if (state.mode !== 'asking' || !state.currentQuestionId) return
     if (keys.length === 0) return
 
-    const { currentQuestion, osType, hintShown, questionQueue, questionIndex } = state
+    const normalizedInput = normalizeShortcutFromKeys(keys)
+    const inputArr = normalizedInput.split('+')
 
-    if (!currentQuestion) return
-
-    const isCorrect = judgeShortcut(keys, currentQuestion, osType)
-
-    if (isCorrect) {
-      const damage = hintShown ? HINT_DAMAGE : CORRECT_DAMAGE
-      const newEnemyHp = Math.max(0, state.enemyHp - damage)
-      const newLogs = [
-        ...state.logs,
-        `あなたのこうげき！ ${damage} ダメージ！`,
-        `あなたはせいかいした！`,
-      ]
-      const newScore = state.score + (hintShown ? 5 : 10)
-      const newCorrectCount = state.correctCount + 1
-
-      if (newEnemyHp <= 0) {
-        // 勝利
-        set({
-          enemyHp: 0,
-          logs: [...newLogs, 'モンスターをたおした！'],
-          mode: 'win',
-          score: newScore,
-          correctCount: newCorrectCount,
-          attempts: 0,
-          hintShown: false,
-          hintStep: 0,
-        })
-        return
-      }
-
-      // 次の問題へ
-      const nextIndex = questionIndex + 1
-      if (nextIndex >= questionQueue.length) {
-        set({
-          enemyHp: newEnemyHp,
-          logs: [...newLogs, 'すべての問題をクリアした！'],
-          mode: 'win',
-          score: newScore,
-          correctCount: newCorrectCount,
-          attempts: 0,
-          hintShown: false,
-          hintStep: 0,
-        })
-        return
-      }
-
-      const nextQuestion = questionQueue[nextIndex]
-      set({
-        enemyHp: newEnemyHp,
-        logs: [...newLogs, 'つぎのもんだい！'],
-        currentQuestion: nextQuestion,
-        questionIndex: nextIndex,
-        attempts: 0,
-        hintShown: false,
-        hintStep: 0,
-        mode: 'asking',
-        score: newScore,
-        correctCount: newCorrectCount,
+    try {
+      const result = await judgeAnswer({
+        questionId: state.currentQuestionId,
+        os: state.osType,
+        input: inputArr,
+        usedHint: state.hintShown,
       })
-    } else {
-      // 不正解
-      const newAttempts = state.attempts + 1
-      const inputDisplay = displayShortcut(normalizeShortcutFromKeys(keys), osType)
-      const newLogs = [...state.logs, `まちがい... (${inputDisplay})`]
 
-      if (newAttempts >= MAX_ATTEMPTS) {
-        // 敵のターン
-        const newPlayerHp = Math.max(0, state.playerHp - ENEMY_DAMAGE)
-        const logsAfterEnemy = [
-          ...newLogs,
-          `モンスターのこうげき！ ${ENEMY_DAMAGE} ダメージ！`,
+      if (result.isCorrect) {
+        const newEnemyHp = Math.max(0, state.enemyHp - result.damage)
+        const newScore = state.score + (state.hintShown ? 5 : 10)
+        const newLogs = [
+          ...state.logs,
+          `あなたのこうげき！ ${result.damage} ダメージ！`,
+          `あなたはせいかいした！`,
         ]
 
-        if (newPlayerHp <= 0) {
-          set({
-            playerHp: 0,
-            logs: [...logsAfterEnemy, 'あなたはたおれた...'],
-            mode: 'lose',
-            wrongCount: state.wrongCount + 1,
-          })
+        if (newEnemyHp <= 0) {
+          set({ enemyHp: 0, logs: [...newLogs, 'モンスターをたおした！'], mode: 'win', score: newScore, correctCount: state.correctCount + 1 })
           return
         }
 
-        const nextIndex = questionIndex + 1
-        if (nextIndex >= questionQueue.length) {
+        // 次の問題を取得
+        set({ isLoading: true })
+        try {
+          const nextQ = await fetchNextQuestion({
+            os: state.osType,
+            excludeIds: state.askedIds,
+          })
           set({
-            playerHp: newPlayerHp,
-            logs: [...logsAfterEnemy, 'すべての問題が終わった！'],
-            mode: 'win',
-            wrongCount: state.wrongCount + 1,
+            enemyHp: newEnemyHp,
+            enemyMaxHp: nextQ.monster.hp,
+            logs: [...newLogs, 'つぎのもんだい！'],
+            currentQuestionId: nextQ.questionId,
+            currentPrompt: nextQ.prompt,
+            currentMonster: monsterFromApi(nextQ.monster),
+            askedIds: [...state.askedIds, nextQ.questionId],
             attempts: 0,
             hintShown: false,
             hintStep: 0,
+            mode: 'asking',
+            score: newScore,
+            correctCount: state.correctCount + 1,
+            isLoading: false,
           })
-          return
+        } catch {
+          set({ enemyHp: newEnemyHp, logs: [...newLogs, '全問クリア！'], mode: 'win', score: newScore, correctCount: state.correctCount + 1, isLoading: false })
         }
-
-        set({
-          playerHp: newPlayerHp,
-          logs: [...logsAfterEnemy, 'つぎのもんだい！'],
-          currentQuestion: questionQueue[nextIndex],
-          questionIndex: nextIndex,
-          attempts: 0,
-          hintShown: false,
-          hintStep: 0,
-          mode: 'asking',
-          wrongCount: state.wrongCount + 1,
-        })
       } else {
-        set({
-          attempts: newAttempts,
-          logs: newLogs,
-          mode: 'asking',
-          wrongCount: state.wrongCount + 1,
-        })
+        const newAttempts = state.attempts + 1
+        const newLogs = [...state.logs, `まちがい... (${result.message})`]
+
+        if (newAttempts >= MAX_ATTEMPTS) {
+          const newPlayerHp = Math.max(0, state.playerHp - ENEMY_DAMAGE)
+          const logsAfterEnemy = [...newLogs, `モンスターのこうげき！ ${ENEMY_DAMAGE} ダメージ！`]
+
+          if (newPlayerHp <= 0) {
+            set({ playerHp: 0, logs: [...logsAfterEnemy, 'あなたはたおれた...'], mode: 'lose', wrongCount: state.wrongCount + 1 })
+            return
+          }
+
+          set({ isLoading: true })
+          try {
+            const nextQ = await fetchNextQuestion({ os: state.osType, excludeIds: state.askedIds })
+            set({
+              playerHp: newPlayerHp,
+              logs: [...logsAfterEnemy, 'つぎのもんだい！'],
+              currentQuestionId: nextQ.questionId,
+              currentPrompt: nextQ.prompt,
+              currentMonster: monsterFromApi(nextQ.monster),
+              enemyMaxHp: nextQ.monster.hp,
+              askedIds: [...state.askedIds, nextQ.questionId],
+              attempts: 0,
+              hintShown: false,
+              hintStep: 0,
+              mode: 'asking',
+              wrongCount: state.wrongCount + 1,
+              isLoading: false,
+            })
+          } catch {
+            set({ playerHp: newPlayerHp, logs: [...logsAfterEnemy, '全問クリア！'], mode: 'win', wrongCount: state.wrongCount + 1, isLoading: false })
+          }
+        } else {
+          set({ attempts: newAttempts, logs: newLogs, wrongCount: state.wrongCount + 1 })
+        }
       }
+    } catch {
+      set({ logs: [...state.logs, 'APIエラーが発生しました'], mode: 'asking' })
     }
   },
 
-  showHint() {
+  async showHint() {
     const state = get()
-    if (state.mode !== 'asking' || !state.currentQuestion) return
+    if (state.mode !== 'asking' || !state.currentQuestionId) return
 
-    const { hintStep, currentQuestion } = state
-    if (hintStep === 0) {
+    const nextStep = (state.hintStep + 1) as 1 | 2
+    if (nextStep > 2) return
+
+    try {
+      const result = await fetchHint(state.currentQuestionId, nextStep, state.osType)
       set({
         hintShown: true,
-        hintStep: 1,
+        hintStep: nextStep,
         hintCount: state.hintCount + 1,
-        logs: [...state.logs, `ヒント: ${currentQuestion.hint1}`],
+        logs: [...state.logs, `ヒント: ${result.hint}`],
       })
-    } else if (hintStep === 1) {
-      set({
-        hintStep: 2,
-        hintCount: state.hintCount + 1,
-        logs: [...state.logs, `ヒント: ${currentQuestion.hint2}`],
-      })
+    } catch {
+      set({ logs: [...state.logs, 'ヒントを取得できませんでした'] })
     }
   },
 
-  enemyTurn() {
+  async enemyTurn() {
     const state = get()
     if (state.mode !== 'asking') return
 
     const newPlayerHp = Math.max(0, state.playerHp - ENEMY_DAMAGE)
-    const newLogs = [
-      ...state.logs,
-      `敵のターン: モンスターのこうげき！ ${ENEMY_DAMAGE} ダメージ！`,
-    ]
+    const newLogs = [...state.logs, `敵のターン: モンスターのこうげき！ ${ENEMY_DAMAGE} ダメージ！`]
 
     if (newPlayerHp <= 0) {
-      set({
-        playerHp: 0,
-        logs: [...newLogs, 'あなたはたおれた...'],
-        mode: 'lose',
-      })
+      set({ playerHp: 0, logs: [...newLogs, 'あなたはたおれた...'], mode: 'lose' })
       return
     }
 
-    const nextIndex = state.questionIndex + 1
-    if (nextIndex >= state.questionQueue.length) {
+    set({ isLoading: true })
+    try {
+      const nextQ = await fetchNextQuestion({ os: state.osType, excludeIds: state.askedIds })
       set({
         playerHp: newPlayerHp,
-        logs: [...newLogs, 'すべての問題が終わった！'],
-        mode: 'win',
+        logs: [...newLogs, 'つぎのもんだい！'],
+        currentQuestionId: nextQ.questionId,
+        currentPrompt: nextQ.prompt,
+        currentMonster: monsterFromApi(nextQ.monster),
+        enemyMaxHp: nextQ.monster.hp,
+        askedIds: [...state.askedIds, nextQ.questionId],
         attempts: 0,
         hintShown: false,
         hintStep: 0,
+        mode: 'asking',
+        isLoading: false,
       })
-      return
+    } catch {
+      set({ playerHp: newPlayerHp, logs: [...newLogs, '全問クリア！'], mode: 'win', isLoading: false })
     }
-
-    set({
-      playerHp: newPlayerHp,
-      logs: [...newLogs, 'つぎのもんだい！'],
-      currentQuestion: state.questionQueue[nextIndex],
-      questionIndex: nextIndex,
-      attempts: 0,
-      hintShown: false,
-      hintStep: 0,
-      mode: 'asking',
-    })
   },
 
-  reset() {
-    set(buildInitialState(get().osType))
+  async reset() {
+    await get().initialize(get().osType)
   },
 }))
