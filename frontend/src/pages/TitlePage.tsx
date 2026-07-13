@@ -57,10 +57,6 @@ export default function TitlePage() {
         >
           ⚔️ バトル開始！
         </button>
-
-        <p className="text-xs text-slate-600">
-          ※モック: 演出/数値/問題DBは仮
-        </p>
       </div>
     </div>
   )

@@ -17,7 +17,13 @@ const DEFAULT_MONSTER: Monster = {
   id: 'slime',
   name: 'ショートカットスライム',
   maxHp: 12,
-  emoji: '',
+  emoji: '🟢',
+}
+
+const MONSTER_EMOJI_BY_NAME: Record<string, string> = {
+  ショートカットスライム: '🟢',
+  コマンドゴブリン: '👺',
+  デバッグドラゴン: '🐉',
 }
 
 function monsterFromApi(m: NextQuestionResponse['monster']): Monster {
@@ -25,7 +31,7 @@ function monsterFromApi(m: NextQuestionResponse['monster']): Monster {
     id: m.name,
     name: m.name,
     maxHp: m.hp,
-    emoji: '',
+    emoji: MONSTER_EMOJI_BY_NAME[m.name] ?? '👾',
   }
 }
 
@@ -151,11 +157,9 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
           })
           set({
             enemyHp: newEnemyHp,
-            enemyMaxHp: nextQ.monster.hp,
             logs: [...newLogs, 'つぎのもんだい！'],
             currentQuestionId: nextQ.questionId,
             currentPrompt: nextQ.prompt,
-            currentMonster: monsterFromApi(nextQ.monster),
             askedIds: [...state.askedIds, nextQ.questionId],
             attempts: 0,
             hintShown: false,
@@ -189,8 +193,6 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
               logs: [...logsAfterEnemy, 'つぎのもんだい！'],
               currentQuestionId: nextQ.questionId,
               currentPrompt: nextQ.prompt,
-              currentMonster: monsterFromApi(nextQ.monster),
-              enemyMaxHp: nextQ.monster.hp,
               askedIds: [...state.askedIds, nextQ.questionId],
               attempts: 0,
               hintShown: false,
@@ -251,8 +253,6 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         logs: [...newLogs, 'つぎのもんだい！'],
         currentQuestionId: nextQ.questionId,
         currentPrompt: nextQ.prompt,
-        currentMonster: monsterFromApi(nextQ.monster),
-        enemyMaxHp: nextQ.monster.hp,
         askedIds: [...state.askedIds, nextQ.questionId],
         attempts: 0,
         hintShown: false,

@@ -147,11 +147,3 @@ body {
 .title-glow {
   text-shadow: 0 0 20px rgba(96, 165, 250, 0.7), 0 0 40px rgba(96, 165, 250, 0.3);
 }
-
-.debug-bar {
-  font-family: 'Courier New', monospace;
-  font-size: 0.7rem;
-  color: rgba(148, 163, 184, 0.6);
-  border-top: 1px solid rgba(56, 120, 200, 0.2);
-  padding: 4px 8px;
-}

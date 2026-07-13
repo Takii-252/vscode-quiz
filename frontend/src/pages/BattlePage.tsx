@@ -21,8 +21,6 @@ export default function BattlePage() {
   const currentPrompt = useBattleStore(s => s.currentPrompt)
   const isLoading = useBattleStore(s => s.isLoading)
   const logs = useBattleStore(s => s.logs)
-  const attempts = useBattleStore(s => s.attempts)
-  const hintShown = useBattleStore(s => s.hintShown)
   const submitAnswer = useBattleStore(s => s.submitAnswer)
   const showHint = useBattleStore(s => s.showHint)
   const enemyTurn = useBattleStore(s => s.enemyTurn)
@@ -69,8 +67,7 @@ export default function BattlePage() {
             ))}
           </div>
           <span className="text-xs text-slate-500">
-            OS: <span className="text-slate-300">{osType}</span>
-            {' / '}Mode: <span className="text-slate-300">action-to-shortcut</span>
+            対象 OS: <span className="text-slate-300">{osType === 'mac' ? 'Mac' : 'Windows'}</span>
           </span>
         </div>
       </div>
@@ -109,8 +106,6 @@ export default function BattlePage() {
             prompt={currentPrompt}
             os={osType}
             mode={mode}
-            attempts={attempts}
-            hintShown={hintShown}
             isLoading={isLoading}
             onSubmit={submitAnswer}
             onHint={showHint}
@@ -122,11 +117,6 @@ export default function BattlePage() {
         {/* 右: モンスター */}
         <MonsterPanel monster={currentMonster} hp={enemyHp} />
       </div>
-
-      {/* フッター */}
-      <p className="text-center text-xs text-slate-700">
-        ※モック: 演出/数値/問題DBは仮。ここから設計に合わせて固めよう。
-      </p>
     </div>
   )
 }

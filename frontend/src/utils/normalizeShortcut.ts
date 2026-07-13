@@ -19,6 +19,9 @@ const KEY_ALIAS_MAP: Record<string, string> = {
   // Shift
   shift: 'Shift',
   '⇧': 'Shift',
+  // Arrow keys
+  arrowup: 'Up',
+  arrowdown: 'Down',
 }
 
 /** 単一キー文字列を正規化する */

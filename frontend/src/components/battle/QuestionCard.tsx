@@ -8,8 +8,6 @@ interface QuestionCardProps {
   prompt: string
   os: OsType
   mode: BattleMode
-  attempts: number
-  hintShown: boolean
   isLoading?: boolean
   onSubmit: (keys: string[]) => void
   onHint: () => void
@@ -22,8 +20,6 @@ export default function QuestionCard({
   prompt,
   os,
   mode,
-  attempts,
-  hintShown,
   isLoading = false,
   onSubmit,
   onHint,
@@ -80,12 +76,6 @@ export default function QuestionCard({
         </button>
       </div>
 
-      {/* デバッグ情報 */}
-      <div className="debug-bar">
-        attempts: {attempts} &nbsp;|&nbsp;
-        hintShown: {hintShown.toString()} &nbsp;|&nbsp;
-        state: {mode}
-      </div>
     </div>
   )
 }
